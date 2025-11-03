@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Role Based Login & Registration</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- include SweetAlert2 (put in head or before using it) -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- show SweetAlert popups by reading innerHTML from hidden divs -->
+<!-- Flash messages -->
+<div id="flashError" th:if="${error}" th:text="${error}" hidden></div>
+<div id="flashSuccess" th:if="${message}" th:text="${message}" hidden></div>
+
+<script>
+  // show error if any
+  (function() {
+    var errDiv = document.getElementById('flashError');
+    if (errDiv) {
+      var html = errDiv.innerHTML || '';
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        html: html,   // accepts HTML
+        confirmButtonText: 'OK'
+      });
+    }
+
+    var successDiv = document.getElementById('flashSuccess');
+    if (successDiv) {
+      var html2 = successDiv.innerHTML || '';
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        html: html2,
+        confirmButtonText: 'OK'
+      });
+    }
+  })();
+</script>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 12px 40px;
+  box-shadow: 0px 3px 10px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+  font-weight: 600;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+}
+.navbar-brand i { margin-right: 8px; color: #007bff; }
+.navbar-nav .nav-link { font-weight: 500; margin-left: 15px; }
+
+.container-fluid { flex: 1; display: flex; height: 100%; }
+.left-side, .right-side {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+.left-side {
+  color: white;
+  background: linear-gradient(120deg, #667eea, #764ba2);
+  flex-direction: column;
+  text-align: center;
+  animation: fadeInLeft 1s ease;
+}
+.left-side h1 { font-size: 36px; font-weight: 600; margin-bottom: 20px; }
+.left-side p { font-size: 16px; line-height: 1.6; }
+.left-side i { font-size: 40px; margin: 15px; animation: float 3s infinite ease-in-out; }
+@keyframes fadeInLeft { from { opacity: 0; transform: translateX(-30px);} to { opacity: 1; transform: translateX(0);} }
+@keyframes float { 0%, 100% { transform: translateY(0);} 50% { transform: translateY(-5px);} }
+
+.login-box {
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0px 5px 20px rgba(0,0,0,0.15);
+  animation: fadeInRight 1s ease;
+  transition: all 0.5s ease;
+}
+.login-box h2 { text-align: center; font-weight: 600; margin-bottom: 20px; }
+.login-box select, .login-box input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; }
+.login-box button { width: 100%; padding: 12px; background: #007bff; border: none; color: white; border-radius: 8px; font-weight: 600; transition: 0.3s; }
+.login-box button:hover { background: #0056b3; }
+.login-box p { text-align: center; margin-top: 10px; }
+
+/* Registration Role Choice */
+#register-options {
+  display: none;
+  margin-top: 15px;
+  animation: slideDown 0.5s ease forwards;
+}
+#register-options button {
+  margin: 10px 0;
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+#register-options button.admin { background: linear-gradient(45deg,#ff416c,#ff4b2b); }
+#register-options button.faculty { background: linear-gradient(45deg,#1d976c,#93f9b9); }
+#register-options button.student { background: linear-gradient(45deg,#4e54c8,#8f94fb); }
+#register-options button:hover { transform: translateY(-3px); box-shadow: 0px 8px 20px rgba(0,0,0,0.3); }
+
+@keyframes slideDown { 0% { opacity: 0; transform: translateY(-50px);} 100% { opacity: 1; transform: translateY(0);} }
+
+/* Floating circles */
+.circle { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.2); animation: floatCircle 8s infinite ease-in-out; }
+.circle:nth-child(1){ width: 100px; height: 100px; top: 20%; left: 10%; }
+.circle:nth-child(2){ width: 150px; height: 150px; top: 60%; left: 20%; animation-delay: 2s; }
+.circle:nth-child(3){ width: 80px; height: 80px; top: 40%; left: 70%; animation-delay: 4s; }
+@keyframes floatCircle { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+</style>
+
+<script>
+function showRegisterOptions() {
+  // Hide login form
+  const loginForm = document.querySelector('.login-box form');
+  loginForm.style.display = 'none';
+
+
+  // Hide "New User? Register here" text
+  document.getElementById('register-text').style.display = 'none';
+
+  // Show register buttons
+  document.getElementById('register-options').style.display = 'block';
+}
+
+function redirectToRoleForm(role) {
+  if(role === 'admin') window.location.href = '/registration/admin';
+  else if(role === 'faculty') window.location.href = '/registration/faculty';
+  else if(role === 'student') window.location.href = '/student';
+}
+</script>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg">
+  <a class="navbar-brand" href="#"><i class="fa-solid fa-graduation-cap"></i> MyEduPortal</a>
+  <div class="ms-auto">
+    <ul class="navbar-nav">
+      <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
+      <li class="nav-item"><a class="nav-link" href="#">About</a></li>
+      <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="circle"></div>
+<div class="circle"></div>
+<div class="circle"></div>
+
+<div class="container-fluid">
+  <div class="left-side">
+    <h1>Welcome to MyEduPortal</h1>
+    <p>Your all-in-one education management system. Manage courses, track attendance, check results, and more.</p>
+    <div>
+      <i class="fa-solid fa-book-open"></i>
+      <i class="fa-solid fa-users"></i>
+      <i class="fa-solid fa-chart-line"></i>
+    </div>
+  </div>
+
+  <div class="right-side">
+   <div class="login-box">
+  <h2 id="form-title">Login</h2>
+  <form id="login-form" action="/login" method="post">
+    <select name="role" required>
+      <option value="">Select Role</option>
+      <option value="admin">Admin</option>
+      <option value="faculty">Faculty</option>
+      <option value="student">Student</option>
+    </select>
+    <input type="text" name="name" placeholder="Username" required>
+    <input type="password" name="password" placeholder="Password/mobile No" required>
+    <button type="submit">Login</button>
+    <p>Forgot password? <a href="#">Click here</a></p>
+  </form>
+
+  <p id="register-text">New User? <span style="cursor:pointer; color:#007bff;" onclick="showRegisterOptions()">Register here</span></p>
+
+  <div id="register-options">
+  <!--
+    <button class="admin" onclick="redirectToRoleForm('admin')">Register as Admin</button>
+     -->
+    <button class="faculty" onclick="redirectToRoleForm('faculty')">Faculty</button>
+    <button class="student" onclick="redirectToRoleForm('student')">Student</button>
+  </div>
+</div>
+
+<script>
+function showRegisterOptions() {
+  // Hide login form and title
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('form-title').innerText = 'Register as';
+  document.getElementById('register-text').style.display = 'none';
+
+  // Show register buttons
+  document.getElementById('register-options').style.display = 'block';
+}
+
+function redirectToRoleForm(role) {
+  if(role === 'admin') window.location.href = '/admin-registration';
+  else if(role === 'faculty') window.location.href = '/faculty-registration';
+  else if(role === 'student') window.location.href = '/student-registration';
+}
+</script>
+
+  </div>
+</div>
+</body>
+</html>

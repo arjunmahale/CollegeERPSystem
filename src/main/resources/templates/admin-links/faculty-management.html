@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="../dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Success popup
+  <script th:if="${message}">
+      alert('[[${message}]]');
+  </script>-->
+
+  <!-- Error popup
+  <script th:if="${error}">
+      alert('[[${error}]]');
+  </script>-->
+
+   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- hidden containers that contain raw HTML message (th:utext so <b> remains) -->
+<div id="flashSuccess" th:if="${message}" th:utext="${message}" style="display:none;"></div>
+<div id="flashError" th:if="${error}" th:utext="${error}" style="display:none;"></div>
+
+<!-- show SweetAlert popups by reading innerHTML from hidden divs -->
+<script>
+  // show error if any
+  (function() {
+    var errDiv = document.getElementById('flashError');
+    if (errDiv) {
+      var html = errDiv.innerHTML || '';
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        html: html,   // accepts HTML
+        confirmButtonText: 'OK'
+      });
+    }
+
+    var successDiv = document.getElementById('flashSuccess');
+    if (successDiv) {
+      var html2 = successDiv.innerHTML || '';
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        html: html2,
+        confirmButtonText: 'OK'
+      });
+    }
+  })();
+</script>
+</head>
+<body>
+  <header><u>Admin Dashboard</u></header>
+  <div class="container">
+     <nav class="sidebar" >
+  <div class="profile" style="text-align: center; margin-bottom: 20px;">
+    <img src="profile.jpg" alt="Admin Profile" class="profile-pic" style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid #fff; margin-bottom: 10px;">
+    <h3 class="profile-name" style="font-size: 16px; margin: 0;">Admin User</h3>
+  </div>
+
+  <a href="/admin-dashboard" style="display: block; padding: 10px; color: #ecf0f1; text-decoration: none; font-size: 14px; margin-bottom: 5px;">
+    <i class="fas fa-home" style="margin-right: 10px;"></i> Admin Dashboard
+  </a>
+
+  <a href="/student-management" style="display: block; padding: 10px; color: #ecf0f1; text-decoration: none; font-size: 14px; margin-bottom: 5px;">
+    <i class="fas fa-user-graduate" style="margin-right: 10px;"></i> Student Management
+  </a>
+
+  <a href="/course-management" style="display: block; padding: 10px; color: #ecf0f1; text-decoration: none; font-size: 14px; margin-bottom: 5px;">
+    <i class="fas fa-book" style="margin-right: 10px;"></i> Course Management
+  </a>
+
+  <a href="/faculty-management" style="display: block; padding: 10px; color: #ecf0f1; text-decoration: none; font-size: 14px; margin-bottom: 5px;">
+    <i class="fas fa-chalkboard-teacher" style="margin-right: 10px;"></i> Faculty Management
+  </a>
+
+  <a href="/attendance-list" style="display: block; padding: 10px; color: #ecf0f1; text-decoration: none; font-size: 14px; margin-bottom: 5px;">
+    <i class="fas fa-check-square" style="margin-right: 10px;"></i> Attendance
+  </a>
+
+  <a href="/admin/exams" style="display: block; padding: 10px; color: #ecf0f1; text-decoration: none; font-size: 14px; margin-bottom: 5px;">
+    <i class="fas fa-file-alt" style="margin-right: 10px;"></i> Exams & Results
+  </a>
+
+  <a href="#" style="display: block; padding: 10px; color: #ecf0f1; text-decoration: none; font-size: 14px; margin-bottom: 5px;">
+    <i class="fas fa-bell" style="margin-right: 10px;"></i> Notifications / Notice Board
+  </a>
+
+  <a href="#" style="display: block; padding: 10px; color: #ecf0f1; text-decoration: none; font-size: 14px; margin-bottom: 5px;">
+    <i class="fas fa-calendar-alt" style="margin-right: 10px;"></i> Timetable
+  </a>
+
+  <a href="#" style="display: block; padding: 10px; color: #ecf0f1; text-decoration: none; font-size: 14px; margin-bottom: 5px;">
+    <i class="fas fa-file-invoice" style="margin-right: 10px;"></i> Reports
+  </a>
+</nav>
+
+    <main class="main" id="main-content">
+     <div>
+    <strong>Date: </strong>
+    <span th:text="${today}"></span>
+  </div>
+      <center><h1>Faculty Record</h1></center>
+
+      <!-- ✅ Add Faculty Button -->
+      <div style="display: flex; justify-content: flex-start; margin-bottom: 15px;">
+        <a href="/add-faculty"
+           style="padding:8px 15px;background-color:#28a745;color:white;border-radius:6px;text-decoration:none;">
+          <i class="fa-solid fa-user-plus"></i> Add Faculty
+        </a>
+      </div>
+
+      <!-- ✅ Search Bar -->
+      <div style="margin-bottom: 15px; display:flex; gap:10px;">
+        <input type="text" id="searchInput" placeholder="Enter Faculty ID"
+               style="padding:8px;border:1px solid #ccc;border-radius:5px;flex:1;">
+        <button onclick="searchFaculty()"
+                style="padding:8px 15px;background-color:#007bff;color:white;border:none;border-radius:5px;">
+          Search
+        </button>
+        <button onclick="resetTable()"
+                style="padding:8px 15px;background-color:#6c757d;color:white;border:none;border-radius:5px;">
+          Refresh
+        </button>
+      </div>
+
+      <!-- ✅ Count + Sort + Print -->
+      <div style="margin-bottom: 15px; display:flex; justify-content:space-between; align-items:center;">
+        <!-- Total count -->
+        <div style="font-weight:bold;">
+          Total Faculties: <span id="facultyCount">0</span>
+        </div>
+
+        <!-- Controls -->
+        <div style="display:flex; gap:10px;">
+          <select id="sortDropdown" onchange="applySort()"
+                  style="padding:8px;border:1px solid #ccc;border-radius:5px;">
+            <option value="id">Sort by ID</option>
+            <option value="name">Sort by Name</option>
+            <option value="email">Sort by Email</option>
+            <option value="dept">Sort by Department</option>
+            <option value="course">Sort by Course</option>
+          </select>
+          <button onclick="printFacultyTable()"
+                  style="padding:8px 15px;background-color:#17a2b8;color:white;border:none;border-radius:5px;">
+            🖨️ Print Faculty List
+          </button>
+
+             <!-- ✅ Added Export to excel Button -->
+        <button onclick="exportToExcel()"
+                style="padding:8px 15px;background-color:#28a745;color:white;border:none;border-radius:5px;">
+          ⬇️ Download as Excel
+        </button>
+        </div>
+      </div>
+
+      <table class="student-table" border="1" cellspacing="0" cellpadding="8" style="width:100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th>Sr. No.</th>
+            <th>ID</th>
+            <th>Faculty Name</th>
+            <th>Email</th>
+            <th>Department</th>
+            <th>Course</th>
+            <th>mobile</th>
+            <th>Delete</th>
+            <th>Update</th>
+          </tr>
+        </thead>
+        <tbody id="facultyTableBody">
+          <tr th:each="faculty : ${faculties}">
+            <td></td> <!-- Sr. No. dynamically -->
+            <td th:text="${faculty.id}"></td>
+            <td th:text="${faculty.name}"></td>
+            <td th:text="${faculty.email}"></td>
+            <td th:text="${faculty.department}"></td>
+            <td th:text="${faculty.course.name}"></td>
+            <td th:text="${faculty.mobile}"></td>
+
+            <td>
+              <form th:action="@{/delete-faculty}" method="post">
+                <input type="hidden" name="id" th:value="${faculty.id}" />
+                <button type="submit"
+                        style="padding:5px;background-color:#dc3545;border:none;color:white;border-radius: 5px">
+                  <i class="fa-solid fa-trash"></i> Delete
+                </button>
+              </form>
+            </td>
+            <td>
+              <a th:href="@{'/update-faculty/' + ${faculty.id}}"
+                 style="padding:5px;background-color:#118AB2;color:white;border-radius:5px;text-decoration:none;">
+                <i class="fa-solid fa-pen-to-square"></i> Update
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
+
+    <!-- ✅ JS Logic -->
+    <script>
+      // Add Sr. No. dynamically
+      function updateSrNo() {
+        const rows = document.querySelectorAll("#facultyTableBody tr");
+        let count = 0;
+        rows.forEach((row, index) => {
+          if (row.style.display !== "none") {
+            row.querySelector("td:first-child").textContent = ++count;
+          }
+        });
+        document.getElementById("facultyCount").textContent = count;
+      }
+
+      // 🔍 Search
+      function searchFaculty() {
+        const input = document.getElementById("searchInput").value.trim();
+        const rows = document.querySelectorAll("#facultyTableBody tr");
+
+        rows.forEach(row => {
+          const idCell = row.children[1].textContent.trim();
+          if (input === "" || idCell === input) {
+            row.style.display = "";
+          } else {
+            row.style.display = "none";
+          }
+        });
+        updateSrNo();
+      }
+
+      function resetTable() {
+        document.getElementById("searchInput").value = "";
+        const rows = document.querySelectorAll("#facultyTableBody tr");
+        rows.forEach(row => row.style.display = "");
+        updateSrNo();
+      }
+
+      // 📊 Sorting
+      function applySort() {
+        const sortBy = document.getElementById("sortDropdown").value;
+        const tbody = document.getElementById("facultyTableBody");
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+
+        const colIndexMap = { id: 1, name: 2, email: 3, dept: 4, course: 5 };
+        const colIndex = colIndexMap[sortBy];
+
+        rows.sort((a, b) => {
+          let valA = a.children[colIndex].textContent.trim();
+          let valB = b.children[colIndex].textContent.trim();
+
+          if (!isNaN(valA) && !isNaN(valB)) {
+            valA = Number(valA);
+            valB = Number(valB);
+          }
+
+          if (valA < valB) return -1;
+          if (valA > valB) return 1;
+          return 0;
+        });
+
+        tbody.innerHTML = "";
+        rows.forEach(row => tbody.appendChild(row));
+        updateSrNo();
+      }
+
+      // 🖨️ Print
+      function printFacultyTable() {
+        const table = document.querySelector(".student-table").outerHTML;
+        const newWin = window.open("", "", "width=800,height=600");
+
+        newWin.document.write(`
+          <html>
+            <head>
+              <title>Faculty List</title>
+              <style>
+                table { width:100%; border-collapse: collapse; }
+                th, td { border:1px solid #333; padding:8px; text-align:left; }
+                th { background-color:#f2f2f2; }
+                h2 { text-align:center; }
+              </style>
+            </head>
+            <body>
+              <h2>Faculty List</h2>
+              ${table}
+            </body>
+          </html>
+        `);
+
+        newWin.document.close();
+        newWin.print();
+      }
+
+      // ✅ Run on load
+      window.onload = updateSrNo;
+
+      // ✅ Export to Excel
+      function exportToExcel() {
+        const table = document.querySelector(".student-table");
+        let html = table.outerHTML;
+
+        // Excel needs a special MIME type
+        let uri = 'data:application/vnd.ms-excel;charset=utf-8,' + encodeURIComponent(html);
+
+        let fileDownload = document.createElement("a");
+        document.body.appendChild(fileDownload);
+        fileDownload.href = uri;
+        fileDownload.download = 'faculty-list.xls';  // 📂 Excel file
+        fileDownload.click();
+        document.body.removeChild(fileDownload);
+      }
+
+    </script>
+  </div>
+</body>
+</html>
