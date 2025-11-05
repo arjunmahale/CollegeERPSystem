@@ -88,7 +88,7 @@ public class LoginController {
 
 
 
-	        return "/admin-links/admin-dashboard";
+	        return "admin-links/admin-dashboard";
 	    } else if ("faculty".equals(dbUser.getRole())) {
 
 	    	  // store dbUser in session

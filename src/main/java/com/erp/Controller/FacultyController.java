@@ -56,7 +56,7 @@ public class FacultyController {
         model.addAttribute("courses", courseServ.getAllcourses());
         model.addAttribute("title","Add New Faculty");
         model.addAttribute("formAction","/save-faculty");
-        return "/admin-links/faculty-form"; // ✅ new Thymeleaf template
+        return "admin-links/faculty-form"; // ✅ new Thymeleaf template
     }
 
     // Open form to update Faculty
@@ -67,7 +67,7 @@ public class FacultyController {
         model.addAttribute("title", "Update faculty");
        model.addAttribute("courses", courseServ.getAllcourses());
         model.addAttribute("formAction","/save-faculty");
-        return "/admin-links//faculty-form"; // same form but prefilled
+        return "admin-links//faculty-form"; // same form but prefilled
     }
 
     // Save or update student
@@ -150,7 +150,7 @@ public class FacultyController {
         model.addAttribute("courses", courseServ.getAllcourses());
         model.addAttribute("title","Add New Faculty");
         model.addAttribute("formAction","/reg-save-faculty");
-        return "/admin-links/faculty-form"; // ✅ new Thymeleaf template
+        return "admin-links/faculty-form"; // ✅ new Thymeleaf template
     }
 
     // Save or update faculty
